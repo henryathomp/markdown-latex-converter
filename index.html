@@ -52,9 +52,14 @@
             // Convert inline math
             latex = latex.replace(/\$\$(.*?)\$\$/g, '$$$1$$');
 
-            // Convert bold and italic
-            latex = latex.replace(/\*\*(.*?)\*\*/g, '\\textbf{$1}')
-                         .replace(/\*(.*?)\*/g, '\\textit{$1}');
+            // Convert bold (both ** and __ syntax)
+            latex = latex.replace(/(\*\*|__)(.*?)\1/g, '\\textbf{$2}');
+
+            // Convert highlight (using ^^ syntax)
+            latex = latex.replace(/\^\^(.*?)\^\^/g, '\\colorbox{yellow}{$1}');
+
+            // Convert italic (both * and _ syntax), but not within math mode
+            latex = latex.replace(/(\*|_)(?![^$]*\$)(\S.*?\S|\S)\1/g, '\\textit{$2}');
 
             // Convert inline code
             latex = latex.replace(/`([^`]+)`/g, '\\texttt{$1}');
@@ -64,6 +69,9 @@
 
             // Remove extra newlines
             latex = latex.replace(/\n{3,}/g, '\n\n');
+
+            // Add necessary LaTeX packages for highlighting
+            latex = '\\usepackage{color}\n\\usepackage{soul}\n\n' + latex;
 
             document.getElementById('output').textContent = latex;
         }
