@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown to LaTeX Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            margin-bottom: 10px;
+        }
+        #output {
+            white-space: pre-wrap;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #f8f8f8;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Markdown to LaTeX Converter</h1>
+    <textarea id="input" placeholder="Enter your Markdown here..."></textarea>
+    <button onclick="convertToLaTeX()">Convert to LaTeX</button>
+    <h2>Output:</h2>
+    <pre id="output"></pre>
+    <button onclick="copyToClipboard()">Copy to Clipboard</button>
+
+    <script>
+        function convertToLaTeX() {
+            const input = document.getElementById('input').value;
+            let latex = convertLists(input);
+
+            // Convert headers
+            latex = latex.replace(/^# (.*$)/gm, '\\section{$1}')
+                         .replace(/^## (.*$)/gm, '\\subsection{$1}')
+                         .replace(/^### (.*$)/gm, '\\subsubsection{$1}');
+
+            // Convert inline math
+            latex = latex.replace(/\$\$(.*?)\$\$/g, '$$$1$$');
+
+            // Convert bold and italic
+            latex = latex.replace(/\*\*(.*?)\*\*/g, '\\textbf{$1}')
+                         .replace(/\*(.*?)\*/g, '\\textit{$1}');
+
+            // Convert inline code
+            latex = latex.replace(/`([^`]+)`/g, '\\texttt{$1}');
+
+            // Convert code blocks
+            latex = latex.replace(/```([^`]+)```/g, '\\begin{verbatim}\n$1\n\\end{verbatim}\n');
+
+            // Remove extra newlines
+            latex = latex.replace(/\n{3,}/g, '\n\n');
+
+            document.getElementById('output').textContent = latex;
+        }
+
+        function convertLists(markdown) {
+            let lines = markdown.split('\n');
+            let result = [];
+            let listStack = [];
+            let previousDepth = -1;
+
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i];
+                let match = line.match(/^(\s*)([*-]|\d+\.)\s(.*)$/);
+
+                if (match) {
+                    let [, indent, marker, content] = match;
+                    let depth = indent.length / 2;
+
+                    if (depth > previousDepth) {
+                        let listType = marker === '*' || marker === '-' ? 'itemize' : 'enumerate';
+                        listStack.push(listType);
+                        result.push('\\begin{' + listType + '}');
+                    } else if (depth < previousDepth) {
+                        while (listStack.length > depth) {
+                            result.push('\\end{' + listStack.pop() + '}');
+                        }
+                    }
+
+                    result.push('\\item ' + content);
+                    previousDepth = depth;
+                } else {
+                    while (listStack.length > 0) {
+                        result.push('\\end{' + listStack.pop() + '}');
+                    }
+                    result.push(line);
+                    previousDepth = -1;
+                }
+            }
+
+            while (listStack.length > 0) {
+                result.push('\\end{' + listStack.pop() + '}');
+            }
+
+            return result.join('\n');
+        }
+
+        function copyToClipboard() {
+            const output = document.getElementById('output');
+            const range = document.createRange();
+            range.selectNode(output);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            document.execCommand('copy');
+            window.getSelection().removeAllRanges();
+            alert('Copied to clipboard!');
+        }
+    </script>
+</body>
+</html>
