@@ -28,6 +28,16 @@
         button {
             padding: 10px;
             margin-right: 10px;
+            cursor: pointer;
+        }
+        #copyButton {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            transition: background-color 0.3s;
+        }
+        #copyButton:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
@@ -37,7 +47,7 @@
     <button onclick="convertToLaTeX()">Convert to LaTeX</button>
     <h2>Output:</h2>
     <pre id="output"></pre>
-    <button onclick="copyToClipboard()">Copy to Clipboard</button>
+    <button id="copyButton" onclick="copyToClipboard()">Copy to Clipboard</button>
 
     <script>
         function convertToLaTeX() {
@@ -69,9 +79,6 @@
 
             // Remove extra newlines
             latex = latex.replace(/\n{3,}/g, '\n\n');
-
-            // Add necessary LaTeX packages for highlighting
-           // latex = '\\usepackage{color}\n\\usepackage{soul}\n\n' + latex;
 
             document.getElementById('output').textContent = latex;
         }
@@ -120,13 +127,21 @@
 
         function copyToClipboard() {
             const output = document.getElementById('output');
+            const copyButton = document.getElementById('copyButton');
             const range = document.createRange();
             range.selectNode(output);
             window.getSelection().removeAllRanges();
             window.getSelection().addRange(range);
             document.execCommand('copy');
             window.getSelection().removeAllRanges();
-            alert('Copied to clipboard!');
+            
+            copyButton.textContent = 'Copied!';
+            copyButton.style.backgroundColor = '#45a049';
+            
+            setTimeout(() => {
+                copyButton.textContent = 'Copy to Clipboard';
+                copyButton.style.backgroundColor = '#4CAF50';
+            }, 2000);
         }
     </script>
 </body>
