@@ -71,7 +71,7 @@
             latex = latex.replace(/\n{3,}/g, '\n\n');
 
             // Add necessary LaTeX packages for highlighting
-            latex = '\\usepackage{color}\n\\usepackage{soul}\n\n' + latex;
+           // latex = '\\usepackage{color}\n\\usepackage{soul}\n\n' + latex;
 
             document.getElementById('output').textContent = latex;
         }
